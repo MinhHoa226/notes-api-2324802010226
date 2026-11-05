@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo cáo Bài 1: Hello Cloud API - Notes API</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    h1, h2 {
+      color: #0366d6;
+      border-bottom: 2px solid #e1e4e8;
+      padding-bottom: 8px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      background-color: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    th, td {
+      border: 1px solid #dfe2e5;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f6f8fa;
+      font-weight: 600;
+    }
+    tr:nth-child(even) {
+      background-color: #fcfcfc;
+    }
+    ul {
+      background-color: #fff;
+      padding: 20px 20px 20px 40px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    li {
+      margin-bottom: 12px;
+    }
+    code {
+      background-color: #f0f3f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Báo cáo Bài 1: Hello Cloud API & Kết quả Đám mây</h1>
+
+  <h2>1. Bảng so sánh Môi trường Cá nhân vs Đám mây (Codespace)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tiêu chí</th>
+        <th>Máy cá nhân</th>
+        <th>Codespace</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Thời gian từ lúc bắt đầu đến khi chạy được <code>node -v</code></strong></td>
+        <td>~15 - 30 phút (Tải bộ cài, chạy Setup Wizard, cấu hình biến môi trường PATH)</td>
+        <td>~45 - 60 giây (Tự động khởi tạo từ repo template có sẵn môi trường)</td>
+      </tr>
+      <tr>
+        <td><strong>Số CPU, RAM (từ API)</strong></td>
+        <td>8 CPUs, 15.3 GB RAM</td>
+        <td>2 CPUs, 7.8 GB RAM</td>
+      </tr>
+      <tr>
+        <td><strong>Hệ điều hành</strong></td>
+        <td>Windows 11 (64-bit)</td>
+        <td>Linux (Ubuntu 22.04 LTS / Azure Container)</td>
+      </tr>
+      <tr>
+        <td><strong>Cách truy cập từ thiết bị khác</strong></td>
+        <td>Cần cấu hình Router NAT/Port Forwarding hoặc dùng công cụ trung gian (ngrok, tailscale)</td>
+        <td>Chuyển Port Visibility sang <code>Public</code>, mở URL HTTPS do GitHub cung cấp</td>
+      </tr>
+      <tr>
+        <td><strong>Chi phí, đo bằng gì</strong></td>
+        <td>Chi phí phần cứng máy tính + Tiền điện tiêu thụ (kWh)</td>
+        <td>Miễn phí định mức, đo bằng Core-Giờ (Core-hours) và Dung lượng lưu trữ</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>2. Đối chiếu 5 Đặc tính Điện toán Đám mây theo NIST</h2>
+  <ul>
+    <li><strong>1. Tự phục vụ theo yêu cầu (On-demand self-service):</strong> Chủ động tạo và khởi chạy máy ảo trực tiếp qua giao diện web (nhấp <em>Create codespace on main</em>) mà không cần chờ quản trị viên cấp phát thủ công.</li>
+    <li><strong>2. Truy cập mạng rộng (Broad network access):</strong> Ứng dụng API chạy trên port 3000 có thể truy cập dễ dàng bằng kết nối internet chuẩn qua giao thức HTTPS từ mọi thiết bị (máy tính, điện thoại).</li>
+    <li><strong>3. Gộp tài nguyên (Resource pooling):</strong> Máy ảo Codespace được chia sẻ tài nguyên phần cứng từ trung tâm dữ liệu đám mây lớn cho nhiều người dùng nhưng vẫn đảm bảo tính cô lập ứng dụng.</li>
+    <li><strong>4. Co giãn nhanh (Rapid elasticity):</strong> Dễ dàng scale-up cấu hình máy ảo (nâng cấp số nhân CPU, RAM) linh hoạt theo nhu cầu mà không cần thay thế phần cứng vật lý.</li>
+    <li><strong>5. Dịch vụ đo lường được (Measured service):</strong> Hệ thống tự động theo dõi và ghi nhận chính xác mức độ tiêu thụ tài nguyên (Core-hours) tại mục <em>Billing & Usage</em> của tài khoản.</li>
+  </ul>
+
+</body>
+</html>
