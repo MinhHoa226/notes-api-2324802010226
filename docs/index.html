@@ -107,4 +107,116 @@
   </ul>
 
 </body>
+<section id="bai-2" style="font-family: Arial, sans-serif; line-height: 1.6; max-width: 900px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+    <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px;">Bài 2: Ảo hóa, Container và Mô phỏng Trung tâm Dữ liệu</h2>
+
+    <h3>1. Thông tin sản phẩm triển khai</h3>
+    <ul>
+        <li><strong>Link Package công khai trên GHCR:</strong> <a href="https://github.com/users/MinhHoa226/packages/container/package/notes-api" target="_blank">https://github.com/users/MinhHoa226/packages/container/package/notes-api</a></li>
+        <li><strong>Image URI:</strong> <code>ghcr.io/minhhoa226/notes-api:1.0</code></li>
+    </ul>
+
+    <h3>2. Cấu hình Dockerfile</h3>
+    <pre style="background: #f4f4f4; padding: 12px; border-radius: 5px; overflow-x: auto;"><code>FROM node:22-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY src ./src
+ENV PORT=3000
+EXPOSE 3000
+USER node
+CMD ["node", "src/server.js"]</code></pre>
+
+    <h3>3. Bảng 1: So sánh Máy ảo (Codespace) và Container (notes2)</h3>
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <thead style="background-color: #3498db; color: white;">
+            <tr>
+                <th>Tiêu chí</th>
+                <th>Codespace (Máy ảo)</th>
+                <th>Container <code>notes2</code></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Thời gian khởi động</strong></td>
+                <td>Khoảng 30 – 60 giây (từ bài 1)</td>
+                <td>~0.38 giây (đo bằng <code>time docker run</code>)</td>
+            </tr>
+            <tr>
+                <td><strong>Kích thước</strong></td>
+                <td>15 GB (hạn mức đĩa máy ảo)</td>
+                <td>~63.3 MB (Content Size) / ~251 MB (Disk Usage)</td>
+            </tr>
+            <tr>
+                <td><strong>Nhân hệ điều hành</strong></td>
+                <td>Riêng biệt cho từng máy ảo</td>
+                <td>Dùng chung với máy chủ (<code>6.8.0-1070-azure</code>)</td>
+            </tr>
+            <tr>
+                <td><strong>Mức cô lập</strong></td>
+                <td>Cô lập phần cứng hoàn toàn (Hypervisor)</td>
+                <td>Cô lập tiến trình &amp; tài nguyên (Namespaces &amp; Cgroups)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>4. Bảng 2: Kết quả mô phỏng trung tâm dữ liệu với CloudSim Plus</h3>
+    <table border="1" cellpadding="8" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <thead style="background-color: #2ecc71; color: white;">
+            <tr>
+                <th>Lần chạy</th>
+                <th>Thay đổi cấu hình</th>
+                <th>Thời điểm hoàn thành cloudlet cuối (giây mô phỏng)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Lần 0</strong></td>
+                <td>Giữ nguyên cấu hình gốc (<code>HOSTS=1, VMS=2, CLOUDLETS=4</code>)</td>
+                <td>20.22 giây</td>
+            </tr>
+            <tr>
+                <td><strong>Lần 1</strong></td>
+                <td>Nhân đôi số lượng máy ảo (<code>VMS=4</code>)</td>
+                <td>20.10 giây</td>
+            </tr>
+            <tr>
+                <td><strong>Lần 2</strong></td>
+                <td>Nhân đôi số lượng tác vụ (<code>CLOUDLETS=8</code>)</td>
+                <td>20.10 giây</td>
+            </tr>
+            <tr>
+                <td><strong>Lần 3</strong></td>
+                <td>Đổi bộ lập lịch cloudlet sang <code>CloudletSchedulerSpaceShared</code></td>
+                <td>20.10 giây</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>5. Trả lời câu hỏi phản biện</h3>
+    
+    <h4>Câu 1: Vì sao API trong container notes2 vẫn báo memoryGB bằng RAM máy chủ dù đã giới hạn 128 MB? Ứng dụng Java hoặc Node.js chạy trong container cần lưu ý gì về điều này?</h4>
+    <p><strong>Nguyên nhân:</strong> Các hàm hệ thống chuẩn (như <code>os.totalmem()</code> trong Node.js) đọc thông tin dung lượng bộ nhớ trực tiếp từ tệp ảo <code>/proc/meminfo</code> của nhân hệ điều hành máy chủ. Mặc dù Docker đã áp đặt giới hạn <code>--memory=128m</code> qua cơ chế <strong>cgroups</strong> ở tầng kernel để ngắt tiến trình khi vượt ngưỡng, môi trường user-space bên trong container vẫn nhìn thấy tổng dung lượng RAM vật lý của máy chủ.</p>
+    <p><strong>Lưu ý khi triển khai:</strong></p>
+    <ul>
+        <li><strong>Đối với Node.js:</strong> V8 Engine tự động ước tính kích thước Heap tối đa dựa trên tổng RAM hệ thống. Nếu Heap vượt quá 128 MB trước khi thu gom rác (GC), tiến trình sẽ bị Linux OOM Killer tiêu diệt đột ngột (<code>Killed</code>). Cần chủ động giới hạn heap bằng tham số <code>--max-old-space-size=100</code>.</li>
+        <li><strong>Đối với Java (JVM):</strong> Các phiên bản JVM cũ không nhận diện được cgroups và sẽ cấp phát RAM quá mức gây crash container. Cần sử dụng các phiên bản Java hiện đại có bật <code>-XX:+UseContainerSupport</code> và thiết lập tỷ lệ RAM phù hợp (ví dụ <code>-XX:MaxRAMPercentage=75</code>).</li>
+    </ul>
+
+    <h4>Câu 2: Time-shared và space-shared khác nhau ra sao trong kết quả lần 3? Một nhà cung cấp đám mây hướng thị trường sẽ chọn chính sách nào cho gói giá rẻ, vì sao?</h4>
+    <p><strong>Sự khác biệt:</strong></p>
+    <ul>
+        <li><strong>Time-shared:</strong> Cho phép nhiều tác vụ (cloudlet) chia sẻ chung các lõi CPU của máy ảo thông qua cơ chế phân chia lát cắt thời gian (time-slicing), các tiến trình chạy luân phiên xen kẽ nhau.</li>
+        <li><strong>Space-shared:</strong> Phân bổ không gian lõi CPU độc lập. Mỗi tác vụ chiếm dụng trọn vẹn số lõi yêu cầu cho đến khi kết thúc; các tác vụ đến sau phải xếp hàng chờ nếu không đủ lõi trống.</li>
+    </ul>
+    <p><strong>Lựa chọn của nhà cung cấp đám mây:</strong> Đối với gói dịch vụ giá rẻ hướng tới thị trường phổ thông, nhà cung cấp sẽ chọn chính sách <strong>Time-shared</strong>. Chính sách này cho phép bán quá tải tài nguyên (overselling), tận dụng tối đa thời gian nhàn rỗi của CPU vật lý khi các tiến trình khác đang chờ I/O, từ đó phục vụ được nhiều khách hàng hơn trên cùng một hạ tầng và giảm chi phí vận hành.</p>
+
+    <h4>Câu 3: Mô phỏng giúp ích gì trước khi thuê hạ tầng thật, và kết quả mô phỏng có thể sai lệch với thực tế ở điểm nào?</h4>
+    <p><strong>Lợi ích của mô phỏng:</strong> Giúp kỹ sư dự báo trước hiệu năng hệ thống, kiểm thử các chiến lược lập lịch và phân bổ tài nguyên, ước lượng thời gian xử lý tác vụ cũng như tối ưu hóa chi phí đầu tư mà không phải trả phí thuê hạ tầng thật hay đối mặt với rủi ro gián đoạn dịch vụ.</p>
+    <p><strong>Điểm sai lệch so với thực tế:</strong></p>
+    <ul>
+        <li><strong>Biến động mạng:</strong> Mô phỏng thường giả định băng thông và độ trễ mạng là hằng số lý tưởng, trong khi mạng thực tế luôn biến động, chịu ảnh hưởng bởi tắc nghẽn và mất gói tin.</li>
+        <li><strong>Tài nguyên I/O và bộ nhớ đệm:</strong> Mô phỏng quy đổi khối lượng công việc thành các chỉ số tính toán thuần túy (MI), bỏ qua các nút thắt cổ chai thực tế như tốc độ đọc/ghi ổ cứng (Disk I/O), tranh chấp truy vấn cơ sở dữ liệu và hiệu ứng bộ nhớ đệm (CPU Cache).</li>
+    </ul>
+</section>
 </html>
